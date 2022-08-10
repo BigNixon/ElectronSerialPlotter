@@ -1,0 +1,1 @@
+Ready to build on x64 architecture
