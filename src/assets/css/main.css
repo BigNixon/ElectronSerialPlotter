@@ -26,7 +26,7 @@ body{
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
 }
 
 #logo-container{
@@ -63,8 +63,20 @@ body{
     background-color: #df473c;
 }
 
+#channels-container{
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+    align-items: center;
+    margin-bottom: 10px;
+    margin-top: 0;
+}
 
-
+.canvas-channel{
+    background-color: #3cdf9b;
+    display: flex;
+    height: 20vh;
+}
 
 
 

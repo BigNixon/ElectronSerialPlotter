@@ -1,78 +1,54 @@
-'use strict'
-
-const {SerialPort} = require('serialport')
-const {ReadlineParser} = require('@serialport/parser-readline')
+'use strict';
+//=========================ELECTRON SECTION ======================
 const {app,BrowserWindow} = require('electron')
-
-const port = new SerialPort({
-    path:'COM4',
-    baudRate:9600
-  });
-const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }))
-
-
-var data = []
-parser.on('data',(line)=>{
-      line = line.toString()
-      var state = 0;
-      if(line == "0.00 -0.0"){
-        state=0;
-        data = [{
-            "x":-1,
-            "y":-1
-        }]
-        // console.log("renovando")
-      }else{
-        state=1;
-        var arr = line.split(" ");
-        var dato = {
-            "x":arr[0],
-            "y":arr[1]
-        }
-        data.push(dato)
-      }
-      if(data.length==33){
-        console.log(data)
-      }
-  })
-  
+// const {serialCom} = require('./serial')
+// const com4=new serialCom();
+const devtools = require('./devtools')
+if (process.env.NODE_ENV === 'development') {
+    devtools.run_dev_tools();
+    // com4.openSerialCOM4();
+}
 
 app.on('before-quit', ()=>{
     console.log("saliendo")
 })
 
-
 //executes orders when app is ready
 app.on('ready', ()=>{ 
 
     let win = new BrowserWindow({
-        // width: 800,
-        // height: 400,
-        title: 'Serial Com',
+        width: 1024,
+        height: 768,
+        title: 'Serial Com App',
         center: true,
-        maximizable: true
+        maximizable: true,
+        show: false,
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false,
+      }
+    })
+
+    win.maximize();
+    win.once('ready-to-show',()=>{
+      win.show();
+      
     })
 
     win.on('move',()=>{
-        // const position = win.getPosition();
-        // console.log(`La posicion es: ${position}`);
-        win.webContents.executeJavaScript(`
-        const container = document.getElementById("error")
-        container.innerHTML = "modificado"
-        
-    `)
-    })
-
-    win.once('ready-to-show',()=>{
-        win.show();
+        const position = win.getPosition();
+        console.log(`La posicion es: ${position}`);
+        // win.webContents.executeJavaScript(`
+        //   const container = document.getElementById("error")
+        //   container.innerHTML = "modificado"
+        // `)
     })
 
     win.on('closed',()=>{
-        
         win = null;
         app.quit();
     })
 
     win.loadURL(`file://${__dirname}/renderer/index.html`);
-    
+    win.webContents.openDevTools();
 })
