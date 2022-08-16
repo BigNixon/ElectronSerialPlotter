@@ -1,13 +1,18 @@
-'use strict';
+// 'use strict';
 //=========================ELECTRON SECTION ======================
-const {app,BrowserWindow} = require('electron')
-// const {serialCom} = require('./serial')
-// const com4=new serialCom();
+const electron = require('electron')
+const app = electron.app;
+const BrowserWindow=electron.BrowserWindow;
+const ipc = electron.ipcMain;
+const dialog = electron.dialog;
 const devtools = require('./devtools')
 if (process.env.NODE_ENV === 'development') {
     devtools.run_dev_tools();
     // com4.openSerialCOM4();
 }
+
+let mainWindow;
+let configWindow;
 
 app.on('before-quit', ()=>{
     console.log("saliendo")
@@ -15,8 +20,41 @@ app.on('before-quit', ()=>{
 
 //executes orders when app is ready
 app.on('ready', ()=>{ 
+    createMainWindow();
+    createConfigWindow();
+})
 
-    let win = new BrowserWindow({
+let numChannels = -1;
+
+ipc.on('config-window-open',function(event){
+    // dialog.showMessageBox('example of a message');
+    console.log("opened config window from main process")
+    configWindow.show();
+    event.returnValue = numChannels;
+    console.log(numChannels);
+});
+
+
+
+ipc.on('pressed-OK-button',function(event,data){
+    // console.log(event);
+    console.log("OK button pressed from config window");
+    
+    numChannels = data.numeroDeCanales;
+    console.log(numChannels);
+    configWindow.hide();
+    event.sender.send('reply-main-ipc',String(numChannels));
+    mainWindow.webContents.send('numChannels', {numChannels});
+})
+
+
+
+
+
+
+
+function createMainWindow(){
+    mainWindow = new BrowserWindow({
         width: 1024,
         height: 768,
         title: 'Serial Com App',
@@ -26,17 +64,17 @@ app.on('ready', ()=>{
         webPreferences: {
           nodeIntegration: true,
           contextIsolation: false,
-      }
+        }
     })
 
-    win.maximize();
-    win.once('ready-to-show',()=>{
-      win.show();
+    mainWindow.maximize();
+    mainWindow.once('ready-to-show',()=>{
+        mainWindow.show();
       
     })
 
-    win.on('move',()=>{
-        const position = win.getPosition();
+    mainWindow.on('move',()=>{
+        const position = mainWindow.getPosition();
         console.log(`La posicion es: ${position}`);
         // win.webContents.executeJavaScript(`
         //   const container = document.getElementById("error")
@@ -44,11 +82,33 @@ app.on('ready', ()=>{
         // `)
     })
 
-    win.on('closed',()=>{
-        win = null;
+    mainWindow.on('closed',()=>{
+        mainWindow = null;
         app.quit();
     })
 
-    win.loadURL(`file://${__dirname}/renderer/index.html`);
-    // win.webContents.openDevTools();
-})
+    mainWindow.loadURL(`file://${__dirname}/renderer/index.html`);
+    mainWindow.webContents.openDevTools();
+}
+
+function createConfigWindow(){
+    configWindow = new BrowserWindow({
+        alwaysOnTop:true,
+        // frame:false,
+        resizable:false,
+        show:false,
+        // transparent:true,
+        webPreferences:{
+            nodeIntegration: true,
+          contextIsolation: false,
+        },
+        width: 600,
+        height: 200,
+    })
+
+    configWindow.loadURL(`file://${__dirname}/renderer2/index.html`);
+
+    configWindow.on('closed',()=>{
+        configWindow = null;
+    })
+}

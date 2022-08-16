@@ -1,4 +1,21 @@
 let {updateData} = require('../serial')
+const electron = require('electron')
+const ipc= electron.ipcRenderer;
+
+
+
+//config buton=============================================
+const configButton = document.getElementById('button1');
+configButton.addEventListener('click',()=>{
+  console.log("clicked config button");
+  ipc.send('config-window-open');
+});
+ipc.on('reply-main-ipc',function(event,arg){
+  console.log(arg);
+})
+ipc.on('numChannels', function (evt, message) {
+  console.log(message); // Returns: {'SAVED': 'File Saved'}
+});
 
 //=====================HTML SECTION ==========================
 var volume_values = [];
