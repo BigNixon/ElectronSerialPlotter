@@ -35,14 +35,15 @@ const ins_dataset = {
 }
 
 const zero_line = {
+  label: '',
   data: arr0,
   borderWidth: 1,
   fill: false,
-  borderColor: 'rgb(0, 0, 0)',
+  borderColor: 'rgb(255,255,255)',
   tension: 0.9,
   pointStyle: 'circle',
   pointRadius: 0,
-  pointHoverRadius: 0
+  pointHoverRadius: 0,
 }
 
 const data_exp = {
@@ -82,15 +83,88 @@ setInterval(()=>{
     arr2.push(channelsData[1]);
   
   myChart.update();
+  myChart0.update();
+  myChart1.update();
   console.log(`Numero: ${channelsData}`);
   // document.getElementById("ports").innerHTML=`Port data: ${arr}`;
 },100);
 
 
+module.exports = {arr0,arr1,arr2};
 
 
 
+const ctx0 = document.getElementById('canvas-channel0');
+const channel0_dataset = {
+    label: 'Channel 0',
+    data: arr1,
+    borderWidth: 1,
+    fill: false,
+    borderColor: 'rgb(75, 192, 192)',
+    tension: 0.9,
+    pointStyle: 'circle',
+    pointRadius: 0,
+    pointHoverRadius: 0
+}
 
+const data_chan0 = {
+    labels: volume_values,
+    datasets: [channel0_dataset,zero_line]
+}
+
+
+const myChart0 = new Chart(ctx0, {
+    type: 'line',
+    data: data_chan0,
+    options: {
+      scales: {
+        y: {
+            beginAtZero: true
+        }
+      }
+    }
+});
+
+myChart0.canvas.parentNode.style.height = '10%';
+myChart0.canvas.parentNode.style.width = '30%';
+
+
+
+const ctx1 = document.getElementById('canvas-channel1');
+const channel1_dataset = {
+    label: 'Channel 1',
+    data: arr2,
+    borderWidth: 1,
+    fill: false,
+    borderColor: 'rgb(192, 75, 75)',
+    tension: 0.9,
+    pointStyle: 'circle',
+    pointRadius: 0,
+    pointHoverRadius: 0
+}
+
+const data_chan1 = {
+    labels: volume_values,
+    datasets: [channel1_dataset,zero_line]
+}
+
+
+const myChart1 = new Chart(ctx1, {
+    type: 'line',
+    data: data_chan1,
+    options: {
+      scales: {
+        y: {
+            beginAtZero: true
+        }
+      }
+    }
+});
+
+
+
+myChart1.canvas.parentNode.style.height = '10%';
+myChart1.canvas.parentNode.style.width = '30%';
 
 
 

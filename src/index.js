@@ -50,5 +50,5 @@ app.on('ready', ()=>{
     })
 
     win.loadURL(`file://${__dirname}/renderer/index.html`);
-    win.webContents.openDevTools();
+    // win.webContents.openDevTools();
 })

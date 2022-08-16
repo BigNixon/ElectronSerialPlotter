@@ -1,24 +1,30 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 body{
     margin: 0;
     padding: 0;
-    color: #e9e9e9;
+    color: #ffffff;
     text-align: center;
+    font-family: monospace;
 }
 #all-container{
-    background-color: #282a36;
+    background-color: rgb(240, 240, 240);
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
 }
 #left-banner{
-    background-color: #6272a4;
+    background-color: #FFFFFF;
     width: 20%;
     height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-around;
 }
 #main-dashboard{
     width: 80%;
@@ -35,22 +41,45 @@ body{
     align-items: center;
     justify-content: center;
     padding: 10%;
+    margin-bottom: 80px;
 }
+
+#left-buttons{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+.left-button{
+    width: 100%;
+}
+
 #logo-container img{
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 50%;
+    width: 60%;
 }
 
 #canvas-container{
     width: 80%;
 }
 #myChart{
-    background-color: #f8f8f2;
+    background-color: rgb(255, 255, 255);
     width: 100%;
     height: 80vh;
+}
+#canvas-channel0{
+    background-color: #000000;
+    width: 10%;
+    margin: 10% 10%;
+}
+#canvas-channel1{
+    background-color: #000000;
+    width: 10%;
+    margin: 10% 10%;
 }
 
 
@@ -59,8 +88,8 @@ body{
 #serial-info-container{
     margin-top: 4px;
     width: 60vw;
-    height: 10vh;
-    background-color: #df473c;
+    background-color: rgb(181, 204, 196);
+    font-family:monospace;
 }
 
 #channels-container{
@@ -70,13 +99,9 @@ body{
     align-items: center;
     margin-bottom: 10px;
     margin-top: 0;
+    padding-top: 8vh;
 }
 
-.canvas-channel{
-    background-color: #3cdf9b;
-    display: flex;
-    height: 20vh;
-}
 
 
 
@@ -85,19 +110,25 @@ body{
 
 
 button{
-    margin-bottom: 30%;
-    box-shadow: 0px 0px 0px 2px #6272a4;
-	background:linear-gradient(to bottom, #586999 5%, #202c4d 100%);
-	background-color:#7892c2;
-	border-radius:20%;
-	border:1px solid #4e6096;
+    margin-bottom: 3vh;
+	background-color:rgb(240,240,240);
+	border-radius:2px;
+	border:1px solid rgb(181, 181, 181);
 	display:inline-block;
 	cursor:pointer;
-	color:#ffffff;
-	font-family:Arial;
-	font-size:100%;
-	padding:40% 10%;
+	color:#000000;
+	font-family:sans-serif ;
 	text-decoration:none;
-	text-shadow:0px 1px 0px #283966;
-    width: auto;
+	text-shadow:0px 1px 0px #000000;
+    width: 8.6vw;
+    height: 4vh;
+    font-size: 1.7vw;
+}
+button:hover{
+    background-color:rgb(229,241,251);
+    border: 1px solid rgb(18, 129, 218);
+}
+button:active{
+    scale: 0.9;
+    background-color: rgb(204, 228, 247);
 }
