@@ -1,77 +1,88 @@
 let {updateData} = require('../serial')
+
+
 const electron = require('electron')
 const ipc= electron.ipcRenderer;
 
 
+let numeroDeCanales=5;
+let chanIngresados = false;
+let start=false;
 
+let ctxCh = [] 
+let data_chan =[]
+let chCharts = []
+let canvas = []
+canvas.push(document.getElementById('canvas-channel0'));
+canvas.push(document.getElementById('canvas-channel1'));
+canvas.push(document.getElementById('canvas-channel2'));
+canvas.push(document.getElementById('canvas-channel3'));
+canvas.push(document.getElementById('canvas-channel4'));
+ctxCh.push(canvas[0]);
+ctxCh.push(canvas[1]);
+ctxCh.push(canvas[2]);
+ctxCh.push(canvas[3]);
+ctxCh.push(canvas[4]);
 //config buton=============================================
 const configButton = document.getElementById('button1');
 configButton.addEventListener('click',()=>{
   console.log("clicked config button");
   ipc.send('config-window-open');
+  chanIngresados=false;
 });
 ipc.on('reply-main-ipc',function(event,arg){
   console.log(arg);
 })
 ipc.on('numChannels', function (evt, message) {
-  console.log(message); // Returns: {'SAVED': 'File Saved'}
+  numeroDeCanales = message.numChannels;
+  console.log(numeroDeCanales); // Returns: {'SAVED': 'File Saved'}
+  chanIngresados=true;
+  for(let i=0;i<canvas.length;i++){
+    if(i<numeroDeCanales){
+      canvas[i].style.display = "block"
+    }else{
+      canvas[i].style.display = "none"
+    }
+  }
 });
 
 //=====================HTML SECTION ==========================
-var volume_values = [];
-var arr0 = [];
-var arr1 = [];
-var arr2 = [];
-var i=0;
 
+let volume_values = [];
+let channelsData = [];
+let channelsColors = ["#fc0362","#0384fc","#03fc28","#fcd303","#8c03fc"];
+let channelsDataset = [];
+let dataserial = updateData();
+let arrDaraSerial = [0,0,0,0,0];
 
-const ctx = document.getElementById('myChart');
+for(let i=0;i<numeroDeCanales;i++){
+  channelsData.push([]);
+}
+// GENERAL CHART ====================================================
+const ctx = document.getElementById('myChart'); //chart general
 
-const exp_dataset = {
-    label: 'Flujo Expiracion vs Volumen',
-    data: arr1,
+for(let i=0;i<numeroDeCanales;i++){
+  channelsDataset.push({
+    label: `Humedad canal ${i}`,
+    data: channelsData[i],
     borderWidth: 1,
     fill: false,
-    borderColor: 'rgb(75, 192, 192)',
+    borderColor: channelsColors[i],
     tension: 0.9,
     pointStyle: 'circle',
     pointRadius: 0,
     pointHoverRadius: 0
+  });
 }
 
-const ins_dataset = {
-  label: 'Flujo Inspiracion vs Volumen',
-  data: arr2,
-  borderWidth: 1,
-  fill: false,
-  borderColor: 'rgb(192, 75, 75)',
-  tension: 0.9,
-  pointStyle: 'circle',
-  pointRadius: 0,
-  pointHoverRadius: 0
-}
-
-const zero_line = {
-  label: '',
-  data: arr0,
-  borderWidth: 1,
-  fill: false,
-  borderColor: 'rgb(255,255,255)',
-  tension: 0.9,
-  pointStyle: 'circle',
-  pointRadius: 0,
-  pointHoverRadius: 0,
-}
-
-const data_exp = {
+const generalChartData = {
     labels: volume_values,
-    datasets: [exp_dataset,ins_dataset,zero_line]
+    datasets: channelsDataset
 }
-
 
 const myChart = new Chart(ctx, {
     type: 'line',
-    data: data_exp,
+    data: generalChartData,
     options: {
       scales: {
         y: {
@@ -80,139 +91,157 @@ const myChart = new Chart(ctx, {
       }
     }
 });
+
+
+
+
+for(let i=0;i<numeroDeCanales;i++){
+  data_chan.push({
+    labels: volume_values,
+    datasets: [channelsDataset[i]]
+  });
+  chCharts.push(new Chart(ctxCh[i], {
+      type: 'line',
+      data: data_chan[i],
+      options: {
+        scales: {
+          y: {
+              beginAtZero: true
+          }
+        }
+      }
+  }));
+  let widthn = 100/numeroDeCanales;
+  chCharts[i].canvas.parentNode.style.height = '10%';
+  chCharts[i].canvas.parentNode.style.width = `${widthn}%`;
+}
+
+
+
+
+
+
+
+//UPDATE CHARTS=====================================================
+
+  setInterval(()=>{
+    //arrDaraSerial: [CH0,CH1,CH2,CH3,T]
+    //channels that dont send real data=> FF
+    if(chanIngresados && start){
+      dataserial = updateData();
+      arrDaraSerial = dataserial.split(" "); //returns an array of each channel data
+      while(channelsData[0].length>255){
+        for(let i=0;i<numeroDeCanales;i++){
+          channelsData[i].shift();
+        }
+        volume_values.shift();
+      }
+      volume_values.push(0);
+      for(let i=0;i<numeroDeCanales;i++){
+        channelsData[i].push(arrDaraSerial[i]);
+      }
+    
+      myChart.update();
+      for(let i=0;i<numeroDeCanales;i++){
+        chCharts[i].update();
+      }
+      console.log(channelsData);
+      // document.getElementById("ports").innerHTML=`Port data: ${arr}`;
+
+      channel0.innerHTML = `${arrDaraSerial[0]}`
+      channel1.innerHTML = `${arrDaraSerial[1]}`
+      channel2.innerHTML = `${arrDaraSerial[2]}`
+      channel3.innerHTML = `${arrDaraSerial[3]}`
+      channel4.innerHTML = `${arrDaraSerial[4]}`
+    }
+  },100);
+
+
+
+
+
+// TIMER =========================================================
+const timer = document.getElementById('time-info')
+timer.innerHTML = "00:00:00";
+let seg_totales=0;
 
 setInterval(()=>{
-  i=i+1;
-  let dataserial = updateData();
-  let channelsData = dataserial.split(" ");
-  while(arr0.length>255){
+  if(start){
     
-      
-      arr0.shift();
-      arr1.shift();
-      arr2.shift();
-      volume_values.shift();
+    seg_totales=seg_totales+1;
+    let aux=parseInt(seg_totales);
+
+    let horas=parseInt(aux/3600);
+    aux=aux-parseInt(horas*3600);
+
+    let minutos=parseInt(aux/60);
+    aux=aux-parseInt(minutos*60);
+
+    let segundos=parseInt(aux);
+    // console.log(segundos);
+    // console.log(minutos);
+    // console.log(horas);
+    // console.log(seg_totales);
+
+    let stringHoras = `${horas}`;
+    let stringMinutos = `${minutos}`;
+    let stringSegundos = `${segundos}`;
+
+    if(horas<10){
+      stringHoras = `0${horas}`
+    }
+    if(minutos<10){
+      stringMinutos = `0${minutos}`
+    }
+    if(segundos<10){
+      stringSegundos = `0${segundos}`
+    }
     
+    timer.innerHTML = `${stringHoras}:${stringMinutos}:${stringSegundos}`;
   }
-    volume_values.push(i);
-    arr0.push(0);
-    arr1.push(channelsData[0]);
-    arr2.push(channelsData[1]);
-  
-  myChart.update();
-  myChart0.update();
-  myChart1.update();
-  console.log(`Numero: ${channelsData}`);
-  // document.getElementById("ports").innerHTML=`Port data: ${arr}`;
-},100);
-
-
-module.exports = {arr0,arr1,arr2};
+},1000);
 
 
 
-const ctx0 = document.getElementById('canvas-channel0');
-const channel0_dataset = {
-    label: 'Channel 0',
-    data: arr1,
-    borderWidth: 1,
-    fill: false,
-    borderColor: 'rgb(75, 192, 192)',
-    tension: 0.9,
-    pointStyle: 'circle',
-    pointRadius: 0,
-    pointHoverRadius: 0
-}
 
-const data_chan0 = {
-    labels: volume_values,
-    datasets: [channel0_dataset,zero_line]
-}
-
-
-const myChart0 = new Chart(ctx0, {
-    type: 'line',
-    data: data_chan0,
-    options: {
-      scales: {
-        y: {
-            beginAtZero: true
-        }
+// START BUTTON HANDLER ==================================
+const startButton = document.getElementById('start-button');
+startButton.addEventListener('click',()=>{
+  // console.log(channelsData);
+  start = !start;
+  // console.log(start);
+  if(start){
+    while(channelsData[0].length!=0){
+      for(let i=0;i<numeroDeCanales;i++){
+        channelsData[i].pop();
       }
+      volume_values.pop();
     }
+  }
+  if(!start){
+    startButton.style.background="#f53b5d";
+    startButton.style.color="white";
+  }else{
+    startButton.style.background="#00c247";
+    startButton.style.color="black";
+  }
 });
 
-myChart0.canvas.parentNode.style.height = '10%';
-myChart0.canvas.parentNode.style.width = '30%';
-
-
-
-const ctx1 = document.getElementById('canvas-channel1');
-const channel1_dataset = {
-    label: 'Channel 1',
-    data: arr2,
-    borderWidth: 1,
-    fill: false,
-    borderColor: 'rgb(192, 75, 75)',
-    tension: 0.9,
-    pointStyle: 'circle',
-    pointRadius: 0,
-    pointHoverRadius: 0
+if(!start){
+  startButton.style.background="#f53b5d";
+  startButton.style.color="white";
+}else{
+  startButton.style.background="#00c247";
+  startButton.style.color="black";
+  seg_totales=0;
 }
 
-const data_chan1 = {
-    labels: volume_values,
-    datasets: [channel1_dataset,zero_line]
-}
-
-
-const myChart1 = new Chart(ctx1, {
-    type: 'line',
-    data: data_chan1,
-    options: {
-      scales: {
-        y: {
-            beginAtZero: true
-        }
-      }
-    }
-});
-
-
-
-myChart1.canvas.parentNode.style.height = '10%';
-myChart1.canvas.parentNode.style.width = '30%';
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// INFO SERIAL DISPLAYING ===================================
+const channel0 = document.getElementById('channel0');
+const channel1 = document.getElementById('channel1');
+const channel2 = document.getElementById('channel2');
+const channel3 = document.getElementById('channel3');
+const channel4 = document.getElementById('channel4');
 
 
 

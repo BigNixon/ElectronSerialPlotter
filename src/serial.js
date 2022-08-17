@@ -19,14 +19,14 @@ serialPort.on('open', function() { //OPEN SERIAL PORT
 const {ReadlineParser} = require('@serialport/parser-readline')
 const serialPortParser = serialPort.pipe(new ReadlineParser({ delimiter: '\r\n' }))
 
-var hexStr=`10`;// reads serial data and store
+var hexStr=`10.1 12.2 14.6 24.2 33.3\r\n`;// reads serial data and store
 serialPortParser.on("data", function(data) {
   hexStr = data.toString('ascii');
   // console.log(hexStr);
 });     
 
-function updateData(){
-  let nuevoString = hexStr.slice();
+function updateData(){//functions returns the characters until a \n\r
+  let nuevoString = hexStr.slice(); 
   return nuevoString;
 }
 

@@ -48,15 +48,20 @@ ipc.on('pressed-OK-button',function(event,data){
 })
 
 
-
+ipc.on('pressed-CANCEL-button',function(event,data){
+    // console.log(event);
+    console.log("CANCEL button pressed from config window");
+    configWindow.hide();
+    
+})
 
 
 
 
 function createMainWindow(){
     mainWindow = new BrowserWindow({
-        width: 1024,
-        height: 768,
+        width: 850,
+        height:478,
         title: 'Serial Com App',
         center: true,
         maximizable: true,
@@ -64,23 +69,21 @@ function createMainWindow(){
         webPreferences: {
           nodeIntegration: true,
           contextIsolation: false,
-        }
+        },
+        minWidth: 850,
     })
 
-    mainWindow.maximize();
+    // mainWindow.maximize();
     mainWindow.once('ready-to-show',()=>{
         mainWindow.show();
       
     })
-
-    mainWindow.on('move',()=>{
-        const position = mainWindow.getPosition();
-        console.log(`La posicion es: ${position}`);
-        // win.webContents.executeJavaScript(`
-        //   const container = document.getElementById("error")
-        //   container.innerHTML = "modificado"
-        // `)
-    })
+    mainWindow.on('resize', function () {
+        setTimeout(function () {
+          var size = mainWindow.getSize();
+          mainWindow.setSize(size[0], parseInt(size[0] * 10 / 15));
+        }, 0);
+      });
 
     mainWindow.on('closed',()=>{
         mainWindow = null;
@@ -88,13 +91,13 @@ function createMainWindow(){
     })
 
     mainWindow.loadURL(`file://${__dirname}/renderer/index.html`);
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
 }
 
 function createConfigWindow(){
     configWindow = new BrowserWindow({
         alwaysOnTop:true,
-        // frame:false,
+        frame:false,
         resizable:false,
         show:false,
         // transparent:true,

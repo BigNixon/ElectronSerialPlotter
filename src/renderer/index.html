@@ -13,17 +13,36 @@
         <div id="left-banner">
             <div id="logo-container">
                 <img src="../assets/imgs/logo.jpg" alt="logo-empresa">
-                <p id="nombre-empresa">Redisuener Technologies</p>
+                <p id="nombre-empresa">Control De Humedad</p>
+            </div>
+            <div id="info-container">
+                <div id="time-container">
+                    <p id="time-info">0:00:00</p>
+                </div>
+                <div id="channels-info-container">
+                    <p id="channel0-info">
+                        Canal 0:  
+                        <span id="channel0">21</span>
+                        %
+                    </p>
+                    <p id="channel1-info">Canal 0:  <span id="channel1">21</span>%</p>
+                    <p id="channel2-info">Canal 0:  <span id="channel2">21</span>%</p>
+                    <p id="channel3-info">Canal 0:  <span id="channel3">21</span>%</p>
+                    <p id="channel4-info">Canal 0:  <span id="channel4">21</span>%</p>
+                </div>
             </div>
             <div id="left-buttons">
+                <div class="left-button" id="button-start">
+                    <button id="start-button"> Start/Stop  </button>
+                </div>
                 <div class="left-button" id="button1">
                     <button id="setup-button"> Config  </button>
                 </div>
                 <div class="left-button" id="button2">
-                    <button id="setup-button"> Reporte  </button>
+                    <button id="config-button"> Start  </button>
                 </div>
                 <div class="left-button" id="button2">
-                    <button id="setup-button">Guardar</button>
+                    <button id="report-button">Reporte</button>
                 </div>
             </div>
         </div>
@@ -31,6 +50,9 @@
             <div id="channels-container">
                 <canvas id="canvas-channel0"></canvas>
                 <canvas id="canvas-channel1"></canvas>
+                <canvas id="canvas-channel2"></canvas>
+                <canvas id="canvas-channel3"></canvas>
+                <canvas id="canvas-channel4"></canvas>
             </div>
             <div id="canvas-container">
                 <canvas id="myChart"></canvas>
