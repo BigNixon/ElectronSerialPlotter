@@ -60,7 +60,7 @@ ipc.on('pressed-CANCEL-button',function(event,data){
 
 function createMainWindow(){
     mainWindow = new BrowserWindow({
-        width: 850,
+        width: 950,
         height:478,
         title: 'Serial Com App',
         center: true,

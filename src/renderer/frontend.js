@@ -44,6 +44,7 @@ ipc.on('numChannels', function (evt, message) {
       canvas[i].style.display = "none"
     }
   }
+  startButton.disabled=false;
 });
 
 //=====================HTML SECTION ==========================
@@ -206,6 +207,8 @@ setInterval(()=>{
 
 // START BUTTON HANDLER ==================================
 const startButton = document.getElementById('start-button');
+startButton.disabled = true;
+
 startButton.addEventListener('click',()=>{
   // console.log(channelsData);
   start = !start;
@@ -234,6 +237,10 @@ if(!start){
   startButton.style.background="#00c247";
   startButton.style.color="black";
   seg_totales=0;
+}
+
+if(startButton.disabled){
+  startButton.style.backgroundColor = "#b8abae";
 }
 
 // INFO SERIAL DISPLAYING ===================================

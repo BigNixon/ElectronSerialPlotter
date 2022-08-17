@@ -10,7 +10,9 @@ okButton.addEventListener('click',()=>{
   console.log(numChan);
   ipc.send('pressed-OK-button',{
     numeroDeCanales: numChan
+
   });
+  
   // ipc.send(numChan);
 });
 
