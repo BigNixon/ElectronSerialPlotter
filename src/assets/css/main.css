@@ -19,7 +19,7 @@ body{
 }
 #left-banner{
     background-color: #FFFFFF;
-    width: 20%;
+    width: 17%;
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -94,6 +94,75 @@ body{
     font-family:monospace;
     border: 1px solid black;
 }
+#time-proceso-info{
+    font-size: 2.7vw;
+    background-color: rgb(181, 204, 196);
+    font-family:monospace;
+    border: 1px solid black;
+}
+
+
+
+#canvas-container{
+    width: 80%;
+}
+#myChart{
+    background-color: rgb(255, 255, 255);
+    width: 100%;
+    height: 80vh;
+}
+#canvas-channel0{
+    background-color: #000000;
+    width: 10%;
+    margin: 8% 2%;
+    display: none;
+}
+#canvas-channel1{
+    background-color: #000000;
+    width: 10%;
+    margin: 8% 2%;
+    display: none;
+}
+#canvas-channel2{
+    background-color: #000000;
+    width: 10%;
+    margin: 8% 2%;
+    display: none;
+}
+#canvas-channel3{
+    background-color: #000000;
+    width: 10%;
+    margin: 8% 2%;
+    display: none;
+}
+#canvas-channel4{
+    background-color: #000000;
+    width: 10%;
+    margin: 8% 2%;
+    display: none;
+}
+
+
+
+#serial-info-container{
+    margin-top: 4px;
+    width: 60vw;
+    background-color: rgb(181, 204, 196);
+    font-family:monospace;
+}
+
+#channels-container{
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+    align-items: center;
+    margin-bottom: 10px;
+    margin-top: 0;
+    padding-top: 8vh;
+}
+
+
+
 #channel0-info{
     margin-top: 4px;
     width: 100%;
@@ -129,69 +198,13 @@ body{
     font-family:monospace;
     border: 1px solid black;
 }
-
-
-#canvas-container{
-    width: 80%;
-}
-#myChart{
-    background-color: rgb(255, 255, 255);
-    width: 100%;
-    height: 80vh;
-}
-#canvas-channel0{
-    background-color: #000000;
-    width: 10%;
-    margin: 10% 10%;
-}
-#canvas-channel1{
-    background-color: #000000;
-    width: 10%;
-    margin: 10% 10%;
-    display: none;
-}
-#canvas-channel2{
-    background-color: #000000;
-    width: 10%;
-    margin: 10% 10%;
-    display: none;
-}
-#canvas-channel3{
-    background-color: #000000;
-    width: 10%;
-    margin: 10% 10%;
-    display: none;
-}
-#canvas-channel4{
-    background-color: #000000;
-    width: 10%;
-    margin: 10% 10%;
-    display: none;
-}
-
-
-
-#serial-info-container{
+#channelT-info{
     margin-top: 4px;
-    width: 60vw;
-    background-color: rgb(181, 204, 196);
-    font-family:monospace;
-}
-
-#channels-container{
-    display: flex;
     width: 100%;
-    justify-content: space-around;
-    align-items: center;
-    margin-bottom: 10px;
-    margin-top: 0;
-    padding-top: 8vh;
+    background-color: rgb(201, 204, 181);
+    font-family:monospace;
+    border: 1px solid black;
 }
-
-
-
-
-
 
 
 

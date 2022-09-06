@@ -6,6 +6,8 @@ const ipc= electron.ipcRenderer;
 
 
 let numeroDeCanales=5;
+let tiempoDeMuestreo=5;
+let tiempoDeProceso=10;
 let chanIngresados = false;
 let start=false;
 
@@ -28,23 +30,76 @@ const configButton = document.getElementById('button1');
 configButton.addEventListener('click',()=>{
   console.log("clicked config button");
   ipc.send('config-window-open');
-  chanIngresados=false;
+  // chanIngresados=false;
 });
-ipc.on('reply-main-ipc',function(event,arg){
-  console.log(arg);
-})
+// ipc.on('reply-main-ipc',function(event,arg){
+//   console.log(arg);
+// })
 ipc.on('numChannels', function (evt, message) {
   numeroDeCanales = message.numChannels;
   console.log(numeroDeCanales); // Returns: {'SAVED': 'File Saved'}
   chanIngresados=true;
   for(let i=0;i<canvas.length;i++){
     if(i<numeroDeCanales){
+      chCharts[i].data.datasets[0].label = `H% CH${i+1}`;
+      chCharts[i].update();
       canvas[i].style.display = "block"
     }else{
       canvas[i].style.display = "none"
     }
   }
+  
+  chCharts[numeroDeCanales-1].data.datasets[0].label = "CH T";
+  chCharts[numeroDeCanales-1].update();
+
+  // myChart.data.datasets
+  // console.log(myChart.data.datasets)
+  
+  channelsDataset = []
+  
+  for(let i=0;i<numeroDeCanales;i++){
+    
+    if(i==numeroDeCanales-1){
+      channelsDataset.push({
+        label: `CH Temperatura`,
+        data: channelsData[numeroDeCanales-1],
+        borderWidth: 1,
+        fill: false,
+        borderColor: channelsColors[numeroDeCanales-1],
+        tension: 0.9,
+        pointStyle: 'circle',
+        pointRadius: 0.5,
+        pointHoverRadius: 0
+      });
+    }else{
+      channelsDataset.push({
+        label: `CH${i+1} H% `,
+        data: channelsData[i],
+        borderWidth: 1,
+        fill: false,
+        borderColor: channelsColors[i],
+        tension: 0.9,
+        pointStyle: 'circle',
+        pointRadius: 0.5,
+        pointHoverRadius: 0
+      });
+    }
+  }
+  myChart.data.datasets = channelsDataset;
+  myChart.update();
+  console.log(myChart.data.datasets)
+
   startButton.disabled=false;
+});
+
+ipc.on('timeMuestreo', function (evt, message) {
+  tiempoDeMuestreo = message.tiempoMuestreo;
+});
+
+
+ipc.on('timeProceso', function (evt, message) {
+  tiempoDeProceso = message.tiempoProceso;
+  updateTimeProceso(tiempoDeProceso);
 });
 
 //=====================HTML SECTION ==========================
@@ -62,19 +117,30 @@ for(let i=0;i<numeroDeCanales;i++){
 // GENERAL CHART ====================================================
 const ctx = document.getElementById('myChart'); //chart general
 
-for(let i=0;i<numeroDeCanales;i++){
+  for(let i=0;i<numeroDeCanales-1;i++){
+    channelsDataset.push({
+      label: `CH${i+1} H% `,
+      data: channelsData[i],
+      borderWidth: 1,
+      fill: false,
+      borderColor: channelsColors[i],
+      tension: 0.9,
+      pointStyle: 'circle',
+      pointRadius: 0.5,
+      pointHoverRadius: 0
+    });
+  }
   channelsDataset.push({
-    label: `Humedad canal ${i}`,
-    data: channelsData[i],
+    label: `CH Temperatura`,
+    data: channelsData[numeroDeCanales-1],
     borderWidth: 1,
     fill: false,
-    borderColor: channelsColors[i],
+    borderColor: channelsColors[numeroDeCanales-1],
     tension: 0.9,
     pointStyle: 'circle',
-    pointRadius: 0,
+    pointRadius: 0.5,
     pointHoverRadius: 0
   });
-}
 
 const generalChartData = {
     labels: volume_values,
@@ -95,7 +161,7 @@ const myChart = new Chart(ctx, {
 
 
 
-
+let widthn = 100/numeroDeCanales;
 for(let i=0;i<numeroDeCanales;i++){
   data_chan.push({
     labels: volume_values,
@@ -112,11 +178,13 @@ for(let i=0;i<numeroDeCanales;i++){
         }
       }
   }));
-  let widthn = 100/numeroDeCanales;
-  chCharts[i].canvas.parentNode.style.height = '10%';
-  chCharts[i].canvas.parentNode.style.width = `${widthn}%`;
+  
 }
 
+for(let i=0;i<numeroDeCanales;i++){
+  chCharts[i].canvas.parentNode.style.width = `${widthn}%`;
+  chCharts[i].canvas.parentNode.style.height = '150px';
+}
 
 
 
@@ -125,37 +193,41 @@ for(let i=0;i<numeroDeCanales;i++){
 
 //UPDATE CHARTS=====================================================
 
-  setInterval(()=>{
-    //arrDaraSerial: [CH0,CH1,CH2,CH3,T]
-    //channels that dont send real data=> FF
-    if(chanIngresados && start){
-      dataserial = updateData();
-      arrDaraSerial = dataserial.split(" "); //returns an array of each channel data
-      while(channelsData[0].length>255){
-        for(let i=0;i<numeroDeCanales;i++){
-          channelsData[i].shift();
-        }
-        volume_values.shift();
-      }
-      volume_values.push(0);
+var intervalCharts=setInterval(updateCharts,tiempoDeMuestreo*1000);
+function updateCharts(){
+  //arrDaraSerial: [CH0,CH1,CH2,CH3,T]
+  //channels that dont send real data=> FF
+  clearInterval(intervalCharts)
+  if(chanIngresados && start){
+    dataserial = updateData();
+    arrDaraSerial = dataserial.split(" "); //returns an array of each channel data
+    while(channelsData[0].length>255){
       for(let i=0;i<numeroDeCanales;i++){
-        channelsData[i].push(arrDaraSerial[i]);
+        channelsData[i].shift();
       }
-    
-      myChart.update();
-      for(let i=0;i<numeroDeCanales;i++){
-        chCharts[i].update();
-      }
-      console.log(channelsData);
-      // document.getElementById("ports").innerHTML=`Port data: ${arr}`;
-
-      channel0.innerHTML = `${arrDaraSerial[0]}`
-      channel1.innerHTML = `${arrDaraSerial[1]}`
-      channel2.innerHTML = `${arrDaraSerial[2]}`
-      channel3.innerHTML = `${arrDaraSerial[3]}`
-      channel4.innerHTML = `${arrDaraSerial[4]}`
+      volume_values.shift();
     }
-  },100);
+    volume_values.push(String(seg_totales)+" s");
+    for(let i=0;i<numeroDeCanales;i++){
+      channelsData[i].push(arrDaraSerial[i]);
+    }
+  
+    myChart.update();
+    for(let i=0;i<numeroDeCanales;i++){
+      chCharts[i].update();
+    }
+    console.log(channelsData);
+    // document.getElementById("ports").innerHTML=`Port data: ${arr}`;
+
+    channel0.innerHTML = `${arrDaraSerial[0]}`
+    channel1.innerHTML = `${arrDaraSerial[1]}`
+    channel2.innerHTML = `${arrDaraSerial[2]}`
+    channel3.innerHTML = `${arrDaraSerial[3]}`
+    channel4.innerHTML = `${arrDaraSerial[4]}`
+  }
+  intervalCharts=setInterval(updateCharts,tiempoDeMuestreo*1000);
+}
+
 
 
 
@@ -166,44 +238,61 @@ const timer = document.getElementById('time-info')
 timer.innerHTML = "00:00:00";
 let seg_totales=0;
 
-setInterval(()=>{
-  if(start){
-    
-    seg_totales=seg_totales+1;
-    let aux=parseInt(seg_totales);
-
-    let horas=parseInt(aux/3600);
-    aux=aux-parseInt(horas*3600);
-
-    let minutos=parseInt(aux/60);
-    aux=aux-parseInt(minutos*60);
-
-    let segundos=parseInt(aux);
-    // console.log(segundos);
-    // console.log(minutos);
-    // console.log(horas);
-    // console.log(seg_totales);
-
-    let stringHoras = `${horas}`;
-    let stringMinutos = `${minutos}`;
-    let stringSegundos = `${segundos}`;
-
-    if(horas<10){
-      stringHoras = `0${horas}`
-    }
-    if(minutos<10){
-      stringMinutos = `0${minutos}`
-    }
-    if(segundos<10){
-      stringSegundos = `0${segundos}`
-    }
-    
-    timer.innerHTML = `${stringHoras}:${stringMinutos}:${stringSegundos}`;
+const timeProc = document.getElementById("time-proceso-info")
+function updateTimeProceso(tiempoDeProceso){
+  
+  let horas = Math.round(parseInt(tiempoDeProceso)/60);
+  let minutos = parseInt(tiempoDeProceso)%60;
+  // console.log("horas: ",horas);
+  let subStringHoras = `${horas}`;
+  let subStringMinutos = `${minutos}`;
+  if(horas<10){
+    subStringHoras = `0${horas}`;
   }
-},1000);
+  if(minutos<10){
+    subStringMinutos = `0${minutos}`;
+  }
+   timeProc.innerHTML = `${subStringHoras}:${subStringMinutos}:00`;
+}
 
 
+function timeUpdate(){
+    if(start){
+      
+      seg_totales=seg_totales+1;
+      let aux=parseInt(seg_totales);
+  
+      let horas=parseInt(aux/3600);
+      aux=aux-parseInt(horas*3600);
+  
+      let minutos=parseInt(aux/60);
+      aux=aux-parseInt(minutos*60);
+  
+      let segundos=parseInt(aux);
+      // console.log(segundos);
+      // console.log(minutos);
+      // console.log(horas);
+      // console.log(seg_totales);
+  
+      let stringHoras = `${horas}`;
+      let stringMinutos = `${minutos}`;
+      let stringSegundos = `${segundos}`;
+  
+      if(horas<10){
+        stringHoras = `0${horas}`
+      }
+      if(minutos<10){
+        stringMinutos = `0${minutos}`
+      }
+      if(segundos<10){
+        stringSegundos = `0${segundos}`
+      }
+      
+      timer.innerHTML = `${stringHoras}:${stringMinutos}:${stringSegundos}`;
+    }
+}
 
+setInterval(timeUpdate,1000);
 
 // START BUTTON HANDLER ==================================
 const startButton = document.getElementById('start-button');
@@ -220,13 +309,16 @@ startButton.addEventListener('click',()=>{
       }
       volume_values.pop();
     }
+    seg_totales=0;
   }
   if(!start){
     startButton.style.background="#f53b5d";
     startButton.style.color="white";
+    // clearInterval(intervalCharts);
   }else{
     startButton.style.background="#00c247";
     startButton.style.color="black";
+    
   }
 });
 
@@ -254,8 +346,17 @@ const channel4 = document.getElementById('channel4');
 
 
 
+// PDF button ===================================================
+const PDFbutton = document.getElementById("PDF-button");
+PDFbutton.addEventListener("click",()=>{
+  console.log("clicked PDF");
+  ipc.send('PDF-button-clicked');
+});
+
+//=========================================================
 
 
+    
 
 
 

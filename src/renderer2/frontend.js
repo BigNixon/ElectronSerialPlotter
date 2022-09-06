@@ -5,12 +5,18 @@ const ipc= electron.ipcRenderer;
 const okButton = document.getElementById('button-ok');
 const cancelButton = document.getElementById('button-cancel');
 const inputValue = document.getElementById('input-num-channels');
+const inputMuestreo = document.getElementById('input-time-muestreo');
+const inputProceso = document.getElementById('input-time-proceso');
+
 okButton.addEventListener('click',()=>{
   let numChan = inputValue.value;
+  let timeMuestreo = inputMuestreo.value;
+  let timeProceso = inputProceso.value;
   console.log(numChan);
   ipc.send('pressed-OK-button',{
-    numeroDeCanales: numChan
-
+    numeroDeCanales: numChan,
+    tiempoDeMuestreo: timeMuestreo,
+    tiempoDeProceso: timeProceso 
   });
   
   // ipc.send(numChan);
@@ -19,3 +25,5 @@ okButton.addEventListener('click',()=>{
 cancelButton.addEventListener('click',()=>{
   ipc.send('pressed-CANCEL-button');
 });
+
+

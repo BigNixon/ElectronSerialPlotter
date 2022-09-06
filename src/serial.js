@@ -37,7 +37,7 @@ const serialPortParser = serialPort.pipe(new ReadlineParser({ delimiter: '\r\n' 
 
 serialPortParser.on("data", function(data) {
   hexStr = data.toString('ascii');
-  // console.log(hexStr);
+  console.log(hexStr);
 });     
 
 });
