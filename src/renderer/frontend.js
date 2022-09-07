@@ -90,6 +90,9 @@ ipc.on('numChannels', function (evt, message) {
   console.log(myChart.data.datasets)
 
   startButton.disabled=false;
+  startButton.style.background="#00c247";
+  startButton.style.color="black";
+  seg_totales=0;
 });
 
 ipc.on('timeMuestreo', function (evt, message) {
@@ -295,12 +298,20 @@ function timeUpdate(){
 setInterval(timeUpdate,1000);
 
 // START BUTTON HANDLER ==================================
+  
+
+
 const startButton = document.getElementById('start-button');
-startButton.disabled = true;
+// startButton.disabled = true;
 
 startButton.addEventListener('click',()=>{
   // console.log(channelsData);
-  start = !start;
+  ipc.send('START-button-clicked',{
+    configState: chanIngresados
+  });
+  if(chanIngresados){
+    start = !start;
+  }
   // console.log(start);
   if(start){
     while(channelsData[0].length!=0){
@@ -329,10 +340,6 @@ if(!start){
   startButton.style.background="#00c247";
   startButton.style.color="black";
   seg_totales=0;
-}
-
-if(startButton.disabled){
-  startButton.style.backgroundColor = "#b8abae";
 }
 
 // INFO SERIAL DISPLAYING ===================================

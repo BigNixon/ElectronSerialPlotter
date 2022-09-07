@@ -33,7 +33,22 @@ ipc.on('config-window-open',function(event){
     console.log(numChannels);
 });
 
-
+ipc.on('START-button-clicked',function(e,data){
+    let estado = data.configState;
+    if(estado==0){
+        const alerta_ingresar_config = {
+            type: 'info',
+            buttons: ['Ok'],
+            // defaultId: 0,
+            title: 'Notificacion',
+            message: 'Debe ingresar la configuracion'
+          };
+        
+          dialog.showMessageBox(null, alerta_ingresar_config, (response) => {
+            console.log(response);
+          });
+    }
+});
 
 ipc.on('pressed-OK-button',function(event,data){
     // console.log(event);
@@ -62,7 +77,7 @@ ipc.on('pressed-CANCEL-button',function(event,data){
 })
 
 ipc.on('PDF-button-clicked',()=>{
-    console.log("clicked screenshot");
+    // console.log("clicked screenshot");
     let path_img="";
     mainWindow.webContents
         .capturePage({
@@ -82,13 +97,13 @@ ipc.on('PDF-button-clicked',()=>{
                 
                     // defaultPath: path.join(__dirname, 
                     // '../assets/image.jpeg'),
-                    buttonLabel: "Save",
+                    buttonLabel: "Guardar",
                 
                     // Restricting the user to only Image Files.
                     filters: [
                         {
-                            name: "Image Files",
-                            extensions: ["png", "jpeg", "jpg"],
+                            name: "Documents",
+                            extensions: ["png", "jpeg", "jpg", "pdf"],
                         },
                     ],
                     properties: [],
@@ -96,9 +111,9 @@ ipc.on('PDF-button-clicked',()=>{
                 .then((file) => {
                     // Stating whether dialog operation was 
                     // cancelled or not.
-                    console.log(file.canceled);
+                    // console.log(file.canceled);
                     if (!file.canceled) {
-                        console.log(file.filePath.toString());
+                        // console.log(file.filePath.toString());
                         // path_img = file.filePath.toString();
                         // Creating and Writing to the image.png file
                         // Can save the File as a jpeg file as well,
@@ -106,24 +121,98 @@ ipc.on('PDF-button-clicked',()=>{
                         fs.writeFile(file.filePath.toString(), 
                                      img.toPNG(), "base64", function (err) {
                             if (err) throw err;
-                            console.log("Saved!");
-                            let img_name = file.filePath.split(".")[0];
-                            // let file_name = img_name.split(".")[0];
-                            console.log(img_name);
-                            doc = new PDFDocument
+                            // console.log("Saved!");
                             
+                            // let file_name = img_name.split(".")[0];
+                            // console.log(img_name);
+                                        // GENERATE PDF
+                            let img_name = file.filePath.split(".")[0]; //KEEPING ALL BUT NOT EXTENSION
+                            const doc = new PDFDocument
                             doc.pipe(fs.createWriteStream(`${img_name}.pdf`))
                             if (process.env.NODE_ENV === 'development') {
                                 devtools.run_dev_tools();
                                 // com4.openSerialCOM4();
                             }
-                            console.log("/".concat(upath.toUnix(path.relative('.',path_img))))
-                            doc.image("./".concat(upath.toUnix(path.relative('.',path_img))), {
-                                fit: [300, 300],
+                            // console.log("/".concat(upath.toUnix(path.relative('.',path_img))));
+                            doc.fontSize(20);
+                            doc.text("Reporte Humedad-Temperatura", 150,20,{
+                                width: 300,
+                                align: 'center',
+                                valign: 'top',
+                                underline: true,
+                            });
+                            doc.fontSize(10);
+                            doc.text("Inicio del proceso:", 60,55);
+                            doc.text("Tiempo programado:", 400,55);
+                            doc.text("Fin del proceso:", 60,75);
+                            doc.text("Canales de Control:", 60,95);
+                            doc.image("./".concat(upath.toUnix(path.relative('.',path_img))),70,120, {
+                                fit:[450,250],
                                 align: 'center',
                                 valign: 'center'
-                                });
-                            doc.end()
+                                })
+                                .rect(70, 120, 450, 250)
+                                .stroke()
+                            doc.moveDown();
+                            doc.fontSize(18);
+                            doc.text("Tabla de tiempos",70,400,{
+                                width: 450,
+                                align: 'center',
+                                valign: 'top',
+                                underline: true
+                            });
+                            let tableTop = 440
+                            const hora = 80
+                            const canal1 = 160
+                            const canal2 = 240
+                            const canal3 = 320
+                            const canal4 = 400
+                            const canalT = 480
+
+                            doc
+                                .fontSize(10)
+                                .text('Hora', hora, tableTop, {bold: true})
+                                .text('Canal 1', canal1, tableTop, {bold: true})
+                                .text('Canal 2', canal2, tableTop, {bold: true})
+                                .text('Canal 3', canal3, tableTop, {bold: true})
+                                .text('Canal 4', canal4, tableTop, {bold: true})
+                                .text('Canal T', canalT, tableTop, {bold: true})
+                            doc.rect(hora, tableTop+10, 440, 0)
+                                .stroke()
+                            let offset_row=0;
+                            for(let i=0;i<125;i++){
+                                if(tableTop+(offset_row+1)*15>680){
+                                    doc.addPage();
+                                    tableTop=15;
+                                    offset_row=0;
+                                }
+                                offset_row+=1;
+                                doc
+                                .fontSize(10)
+                                .text('12:10:00', hora, tableTop+(offset_row)*15, {bold: true})
+                                .text('20%', canal1, tableTop+(offset_row)*15, {bold: true})
+                                .text('12%', canal2, tableTop+(offset_row)*15, {bold: true})
+                                .text('-', canal3, tableTop+(offset_row)*15, {bold: true})
+                                .text('-', canal4, tableTop+(offset_row)*15, {bold: true})
+                                .text(`${i}°C`, canalT, tableTop+(offset_row)*15, {bold: true})
+                            }
+                            doc.end(); //file saved
+                            const options_reporte_message = {
+                                type: 'info',
+                                buttons: ['Ok'],
+                                // defaultId: 0,
+                                title: 'Notificacion',
+                                message: 'Reporte guardado correctamente'
+                              };
+                            
+                              dialog.showMessageBox(null, options_reporte_message, (response) => {
+                                console.log(response);
+                              });
+                            //deleting screenshot
+                            console.log("Removing screenshot:", file.filePath);
+                            fs.unlinkSync(file.filePath);
+                            
+
                         });
                         path_img = file.filePath.toString();
                         
@@ -176,6 +265,16 @@ function createMainWindow(){
 
     mainWindow.loadURL(`file://${__dirname}/renderer/index.html`);
     // mainWindow.webContents.openDevTools();
+    mainWindow.on('close', function (e) {
+        let response_close = dialog.showMessageBoxSync(this, {
+            type: 'question',
+            buttons: ['Yes', 'No'],
+            title: 'Confirm',
+            message: 'Are you sure you want to quit?'
+        });
+    
+        if(response_close == 1) e.preventDefault();
+    });
 }
 
 function createConfigWindow(){
