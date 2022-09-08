@@ -233,8 +233,8 @@ ipc.on('PDF-button-clicked',()=>{
 
 function createMainWindow(){
     mainWindow = new BrowserWindow({
-        width: 950,
-        height:600,
+        width: 761,
+        height:462,
         title: 'Serial Com App',
         center: true,
         maximizable: true,
@@ -244,6 +244,7 @@ function createMainWindow(){
           contextIsolation: false,
         },
         minWidth: 850,
+        // maxHeight: 910,
     })
 
     // mainWindow.maximize();
@@ -254,7 +255,7 @@ function createMainWindow(){
     mainWindow.on('resize', function () {
         setTimeout(function () {
           var size = mainWindow.getSize();
-          mainWindow.setSize(size[0], parseInt(size[0] * 10 / 15));
+          mainWindow.setSize(size[0], parseInt(size[0] * 9 / 15));
         }, 0);
       });
 

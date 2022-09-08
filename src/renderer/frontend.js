@@ -152,8 +152,12 @@ const generalChartData = {
 
 const myChart = new Chart(ctx, {
     type: 'line',
+    responsive: true,
     data: generalChartData,
     options: {
+      animation: {
+        duration: 0
+      },
       scales: {
         y: {
             beginAtZero: true
@@ -174,19 +178,37 @@ for(let i=0;i<numeroDeCanales;i++){
       type: 'line',
       data: data_chan[i],
       options: {
+        plugins: {
+          legend: {
+            display:true,
+            labels: {
+              // usePointStyle: true,
+              fontSize:1.0,
+              boxWidth: 4,
+            }
+          } // Hide legend 
+        },
+        responsive: true,
+        maintainAspectRatio: false,
         scales: {
           y: {
               beginAtZero: true
-          }
+          },
+          yAxes: [{
+            ticks: {
+                fontSize: 0
+            }
+        }]
         }
+        
       }
   }));
-  
+  // chCharts[i].options.legend.display = false;
 }
 
 for(let i=0;i<numeroDeCanales;i++){
   chCharts[i].canvas.parentNode.style.width = `${widthn}%`;
-  chCharts[i].canvas.parentNode.style.height = '150px';
+  chCharts[i].canvas.parentNode.style.height = '20vh';
 }
 
 
@@ -198,11 +220,12 @@ for(let i=0;i<numeroDeCanales;i++){
 
 var intervalCharts=setInterval(updateCharts,tiempoDeMuestreo*1000);
 function updateCharts(){
-  //arrDaraSerial: [CH0,CH1,CH2,CH3,T]
+  //arrDaraSerial: [CH0 CH1 CH2 CH3 T]
   //channels that dont send real data=> FF
   clearInterval(intervalCharts)
   if(chanIngresados && start){
     dataserial = updateData();
+    console.log(dataserial)
     arrDaraSerial = dataserial.split(" "); //returns an array of each channel data
     while(channelsData[0].length>255){
       for(let i=0;i<numeroDeCanales;i++){
