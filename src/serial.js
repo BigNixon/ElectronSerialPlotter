@@ -3,7 +3,7 @@
  *///==================================================================================
 const { SerialPort} = require('serialport')
 
-var hexStr=`10.1 12.2 14.6 24.2 33.3\r\n`;// reads serial data and store
+var hexStr=`10.1 12.2 14.6 24.2 33.3 0.5 \n\r`;// reads serial data and store
 
 // DETECCION DEL COM =================================================================================================
 let COMdisponible = SerialPort.list().then(function(ports){
@@ -32,7 +32,7 @@ COMdisponible.then(function(result){
 //     length: 8 // react only on every 8 bytes
 //   }));
 const {ReadlineParser} = require('@serialport/parser-readline')
-const serialPortParser = serialPort.pipe(new ReadlineParser({ delimiter: '\r\n' }))
+const serialPortParser = serialPort.pipe(new ReadlineParser({ delimiter: '\n\r' }))
 
 
 serialPortParser.on("data", function(data) {

@@ -27,10 +27,10 @@ let tiempoMuestreo = 5;
 
 ipc.on('config-window-open',function(event){
     // dialog.showMessageBox('example of a message');
-    console.log("opened config window from main process")
+    // console.log("opened config window from main process")
     configWindow.show();
     event.returnValue = numChannels;
-    console.log(numChannels);
+    // console.log(numChannels);
 });
 
 ipc.on('START-button-clicked',function(e,data){
@@ -48,7 +48,31 @@ ipc.on('START-button-clicked',function(e,data){
             console.log(response);
           });
     }
+    
+    
+    
+    // console.log(`Inicio del proceso: ${date_obj}`);
 });
+
+ipc.on('config_numchannels_not_valid',function(e,data){
+    const alerta_config_not_valid = {
+        type: 'info',
+        buttons: ['Ok'],
+        // defaultId: 0,
+        title: 'Notificacion',
+        message: 'El numero de canales debe ser entre 1 y 4'
+        };
+      
+        dialog.showMessageBox(
+            new BrowserWindow({
+                show: false,
+                alwaysOnTop: true
+              })
+            , alerta_config_not_valid, (response) => {
+          console.log(response);
+        });
+});
+
 
 ipc.on('pressed-OK-button',function(event,data){
     // console.log(event);
@@ -76,8 +100,9 @@ ipc.on('pressed-CANCEL-button',function(event,data){
     
 })
 
-ipc.on('PDF-button-clicked',()=>{
+ipc.on('PDF-button-clicked',(e,data)=>{
     // console.log("clicked screenshot");
+    // console.log(data.name_report);
     let path_img="";
     mainWindow.webContents
         .capturePage({
@@ -162,12 +187,13 @@ ipc.on('PDF-button-clicked',()=>{
                                 underline: true
                             });
                             let tableTop = 440
-                            const hora = 80
-                            const canal1 = 160
-                            const canal2 = 240
-                            const canal3 = 320
-                            const canal4 = 400
-                            const canalT = 480
+                            const hora = 50
+                            const canal1 = 120
+                            const canal2 = 190
+                            const canal3 = 260
+                            const canal4 = 330
+                            const canalT = 400
+                            const canalHR = 470
 
                             doc
                                 .fontSize(10)
@@ -177,24 +203,42 @@ ipc.on('PDF-button-clicked',()=>{
                                 .text('Canal 3', canal3, tableTop, {bold: true})
                                 .text('Canal 4', canal4, tableTop, {bold: true})
                                 .text('Canal T', canalT, tableTop, {bold: true})
-                            doc.rect(hora, tableTop+10, 440, 0)
+                                .text('Canal HR', canalHR, tableTop, {bold: true})
+                            doc.rect(hora, tableTop+10, 470, 0)
                                 .stroke()
                             let offset_row=0;
-                            for(let i=0;i<125;i++){
+
+                            let texto = fs.readFileSync(data.name_report,{encoding:'utf8', flag:'r'});
+                            let arr_lines= texto.split(/\r?\n/)
+                            for(let i=1;i<arr_lines.length -1;i++){
                                 if(tableTop+(offset_row+1)*15>680){
                                     doc.addPage();
                                     tableTop=15;
                                     offset_row=0;
                                 }
                                 offset_row+=1;
+                                //OPENING DATA FILE
+                                // console.log(arr_lines);
+                                let data_line = arr_lines[i].split(" ");
+                                
+                                let txt_hora = data_line[0].slice(2);
+                                let txt_ch1 = data_line[1];
+                                let txt_ch2 = data_line[2];
+                                let txt_ch3 = data_line[3];
+                                let txt_ch4 = data_line[4];
+                                let txt_cht = data_line[5];
+                                let txt_chhr = data_line[6];
+                                // console.log(txt_hora,txt_ch1,txt_ch2,txt_ch3,txt_ch4,txt_cht,txt_chhr);
+                                // console.log(arr_lines[i].split(" "));
                                 doc
                                 .fontSize(10)
-                                .text('12:10:00', hora, tableTop+(offset_row)*15, {bold: true})
-                                .text('20%', canal1, tableTop+(offset_row)*15, {bold: true})
-                                .text('12%', canal2, tableTop+(offset_row)*15, {bold: true})
-                                .text('-', canal3, tableTop+(offset_row)*15, {bold: true})
-                                .text('-', canal4, tableTop+(offset_row)*15, {bold: true})
-                                .text(`${i}°C`, canalT, tableTop+(offset_row)*15, {bold: true})
+                                .text(txt_hora, hora, tableTop+(offset_row)*15, {bold: true})
+                                .text(txt_ch1, canal1, tableTop+(offset_row)*15, {bold: true})
+                                .text(txt_ch2, canal2, tableTop+(offset_row)*15, {bold: true})
+                                .text(txt_ch3, canal3, tableTop+(offset_row)*15, {bold: true})
+                                .text(txt_ch4, canal4, tableTop+(offset_row)*15, {bold: true})
+                                .text(txt_cht, canalT, tableTop+(offset_row)*15, {bold: true})
+                                .text(txt_chhr, canalHR, tableTop+(offset_row)*15, {bold: true})
                             }
                             doc.end(); //file saved
                             const options_reporte_message = {
@@ -233,8 +277,8 @@ ipc.on('PDF-button-clicked',()=>{
 
 function createMainWindow(){
     mainWindow = new BrowserWindow({
-        width: 761,
-        height:462,
+        width: 1100,
+        height:700,
         title: 'Serial Com App',
         center: true,
         maximizable: true,
@@ -262,7 +306,8 @@ function createMainWindow(){
     mainWindow.on('closed',()=>{
         mainWindow = null;
         app.quit();
-    })
+    });
+    
 
     mainWindow.loadURL(`file://${__dirname}/renderer/index.html`);
     // mainWindow.webContents.openDevTools();
@@ -289,7 +334,7 @@ function createConfigWindow(){
             nodeIntegration: true,
           contextIsolation: false,
         },
-        width: 500,
+        width: 450,
         height: 400,
     })
 

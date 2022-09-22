@@ -13,11 +13,16 @@ okButton.addEventListener('click',()=>{
   let timeMuestreo = inputMuestreo.value;
   let timeProceso = inputProceso.value;
   console.log(numChan);
-  ipc.send('pressed-OK-button',{
-    numeroDeCanales: numChan,
-    tiempoDeMuestreo: timeMuestreo,
-    tiempoDeProceso: timeProceso 
-  });
+  if(numChan<1 || numChan>4){
+    ipc.send('config_numchannels_not_valid')
+  }else{
+    ipc.send('pressed-OK-button',{
+      numeroDeCanales: numChan,
+      tiempoDeMuestreo: timeMuestreo,
+      tiempoDeProceso: timeProceso 
+    });
+  }
+  
   
   // ipc.send(numChan);
 });
