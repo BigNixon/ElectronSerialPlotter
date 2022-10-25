@@ -1,4 +1,49 @@
-let {updateData} = require('../serial')
+
+const { SerialPort} = require('serialport')
+
+var hexStr=`10.1 12.2 14.6 24.2 33.3 0.5 \n\r`;// reads serial data and store
+var ports_disponibles;
+async function listPortDisponibles(){
+  let result = await SerialPort.list().then(function(ports){
+    ports_disponibles = [...ports]
+    //last_com = ports.pop().path;
+    console.log(ports_disponibles);
+    //console.log(last_com);
+    return ports_disponibles
+  });
+  return result;
+}
+let serialPort;
+function getConnection(com){
+  serialPort = new SerialPort({
+    path:`${com}`,
+    baudRate:57600
+  });
+  console.log(`Connected to ${com}`);
+  serialPort.on('open', function() { //OPEN SERIAL PORT
+    if (serialPort.isOpen)
+      console.log("Serial port is open");
+  });
+
+  //   const { ByteLengthParser } = require('@serialport/parser-byte-length')
+  //   const serialPortParser = serialPort.pipe(new ByteLengthParser({
+  //     length: 8 // react only on every 8 bytes
+  //   }));
+  const {ReadlineParser} = require('@serialport/parser-readline')
+  const serialPortParser = serialPort.pipe(new ReadlineParser({ delimiter: '\r\n' }))
+
+
+  serialPortParser.on("data", function(data) {
+    hexStr = data.toString('ascii');
+    // console.log(hexStr);
+  });     
+  return
+}
+
+function updateData(){//functions returns the characters until a \n\r
+  let nuevoString = hexStr.slice(); 
+  return nuevoString;
+}
 
 
 const electron = require('electron')
@@ -29,10 +74,31 @@ ctxCh.push(canvas[4]);
 ctxCh.push(canvas[5]);
 
 
+const menuCOMs = document.getElementById('select');
+async function addCOMsInMenu(){
+  //console.log("desde el frontend listando coms")
+  let comsDisponibles = await listPortDisponibles();
+  while (menuCOMs.firstChild) {
+    menuCOMs.removeChild(menuCOMs.lastChild);
+  }
+  comsDisponibles.forEach(element => {
+    //console.log(element)
+      let option = document.createElement('option');
+      option.innerText = element.path;
+      menuCOMs.appendChild(option);
+  });
+  
+  // console.log("listo")
+  return;
+}
+
+
 //config buton=============================================
 const configButton = document.getElementById('button1');
 configButton.addEventListener('click',()=>{
   // console.log("clicked config button");
+  
+  addCOMsInMenu();
   ipc.send('config-window-open');
   // chanIngresados=false;
 });
@@ -389,6 +455,8 @@ const startButton = document.getElementById('start-button');
 
 startButton.addEventListener('click',()=>{
   // console.log(channelsData);
+  let optionSelected = menuCOMs.options[menuCOMs.selectedIndex].text;
+  
   ipc.send('START-button-clicked',{
     configState: chanIngresados
   });
@@ -397,6 +465,7 @@ startButton.addEventListener('click',()=>{
   }
   // console.log(start);
   if(start){
+    getConnection(optionSelected);
     while(channelsData[0].length!=0){
       for(let i=0;i<6;i++){
         channelsData[i].pop();
@@ -419,7 +488,9 @@ startButton.addEventListener('click',()=>{
   }else{
     startButton.style.background="rgb(240,240,240)";
     startButton.style.color="black";
-
+    serialPort.close(function (err) {
+      console.log('port closed', err);
+    });
   }
 
 
